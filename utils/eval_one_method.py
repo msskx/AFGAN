@@ -1,6 +1,7 @@
 import numpy as np
 from PIL import Image
-from Metric import *
+from utils.Metric import EN_function, MI_function, SF_function, SD_function, AG_function, PSNR_function, MSE_function, \
+    VIF_function, CC_function, SCD_function, Qabf_function, Nabf_function, SSIM_function, MS_SSIM_function
 from natsort import natsorted
 from tqdm import tqdm
 import os
