@@ -19,10 +19,10 @@ class Autoencoder(nn.Module):
         )
         # Define the decoder
         self.vit = ViT(
-            image_size=256,  # 图像尺寸
+            image_size=512,  # 图像尺寸
             channels=2,
             patch_size=32,  # patch大小
-            num_classes=512 * 16 * 16,  # 最终投影类别
+            num_classes=512 * 32 * 32,  # 最终投影类别
             dim=1024,  # 傻傻维度
             depth=6,  # 傻傻深度
             heads=16,  # 多头头数
@@ -47,12 +47,12 @@ class Autoencoder(nn.Module):
         vit_x = self.vit(torch.cat([vi, ir], axis=1))
 
         x = torch.cat([vi, ir], dim=1)
-        # print(f'初始图像：{x.shape}')
+        print(f'初始图像：{x.shape}')
         x = self.encoder(x)
-        # print(f'编码器图像：{x.shape}')
+        print(f'编码器图像：{x.shape}')
 
-        x = x + vit_x.view(-1, 512, 16, 16)  # 将编码器和注意力机制的东西融合
+        x = x + vit_x.view(-1, 512, 32, 32)  # 将编码器和注意力机制的东西融合
 
         x = self.decoder(x)
-        # print(f'解码器图像：{x.shape}')
+        print(f'解码器图像：{x.shape}')
         return x
