@@ -44,15 +44,12 @@ class Autoencoder(nn.Module):
 
     def forward(self, vi, ir):
         # 将红外和可见光塞入vit
-        vit_x = self.vit(torch.cat([vi, ir], axis=1))
-
+        # vit_x = self.vit(torch.cat([vi, ir], axis=1))
         x = torch.cat([vi, ir], dim=1)
         # print(f'初始图像：{x.shape}')
         x = self.encoder(x)
         # print(f'编码器图像：{x.shape}')
-
-        x = x + vit_x.view(-1, 512, 16, 16)  # 将编码器和注意力机制的东西融合
-
+        # x = x + vit_x.view(-1, 512, 16, 16)  # 将编码器和注意力机制的东西融合
         x = self.decoder(x)
         # print(f'解码器图像：{x.shape}')
         return x
