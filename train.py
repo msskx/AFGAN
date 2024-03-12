@@ -87,13 +87,15 @@ for epoch in range(199 * 19):
         # 将生成的图片放入判别器，要求骗过判别器
         vi_disc_gen_out = dis(gen_output.detach())
         # 得到生成器的损失
-        vi_gen_loss_crossentropyloss = loss_fn(vi_disc_gen_out, torch.ones_like(vi_disc_gen_out, device=device))
+        # vi_gen_loss_crossentropyloss = loss_fn(vi_disc_gen_out, torch.ones_like(vi_disc_gen_out, device=device))
+        vi_gen_loss_crossentropyloss = torch.mean(torch.square(gen_output - torch.Tensor(gen_output.shape).uniform_(0.7, 1.2).to(device)))
 
-        # front = torch.mean(torch.square(gen_output - 0.5*vi - 0.5*ir))
-        # back = torch.mean(torch.square(gradient(gen_output) -0.5 * gradient(vi) -0.5 * gradient(vi)))
-        #
-        front = torch.mean(torch.square(gen_output - ir))
-        back = torch.mean(torch.square(gradient(gen_output) - gradient(vi)))
+        front = torch.mean(torch.square(gen_output - 0.5*vi - 0.5*ir))
+        back = torch.mean(torch.square(gradient(gen_output) -0.5 * gradient(vi) -0.5 * gradient(vi)))
+        # original
+
+        # front = torch.mean(torch.square(gen_output - ir))
+        # back = torch.mean(torch.square(gradient(gen_output) - gradient(vi)))
 
         vi_gen_l1_loss = front + epsilon * back
 
@@ -134,7 +136,7 @@ for epoch in range(199 * 19):
             ir = ir.to(device)
             vi = vi.to(device)
             fusion_img = gen(vi, ir)  # 生成图片
-            torch.save(gen.state_dict(), 'Noflossmodel_checkpoint' + (str)(epoch) + '.pth')
+            torch.save(gen.state_dict(), 'Notrans_and_nearloss_model_checkpoint' + (str)(epoch) + '.pth')
             # 得到每个batch的数据之后对每个batch进行计算指标
             # 这里我觉得应该输出每个轮次的平均值
             save_images_from_tensors(ir, vi, fusion_img, epoch)

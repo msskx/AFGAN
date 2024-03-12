@@ -3,10 +3,9 @@ from torch import nn
 from model.vit import ViT
 
 
-class Autoencoder(nn.Module):
+class Encoder(nn.Module):
     def __init__(self):
-        super(Autoencoder, self).__init__()
-        # Define the encoder
+        super(Encoder, self).__init__()
         self.encoder = nn.Sequential(
             nn.Conv2d(2, 64, 3, stride=2, padding=1),
             nn.ReLU(True),
@@ -17,6 +16,34 @@ class Autoencoder(nn.Module):
             nn.Conv2d(256, 512, 3, stride=2, padding=1),
             nn.ReLU(True)
         )
+
+    def forward(self, x):
+        return self.encoder(x)
+
+
+class Decoder(nn.Module):
+    def __init__(self):
+        super(Decoder, self).__init__()
+        self.decoder = nn.Sequential(
+            nn.ConvTranspose2d(512, 256, 4, stride=2, padding=1),
+            nn.ReLU(True),
+            nn.ConvTranspose2d(256, 128, 4, stride=2, padding=1),
+            nn.ReLU(True),
+            nn.ConvTranspose2d(128, 64, 4, stride=2, padding=1),
+            nn.ReLU(True),
+            nn.ConvTranspose2d(64, 1, 4, stride=2, padding=1),
+            nn.Tanh()
+        )
+
+    def forward(self, x):
+        return self.decoder(x)
+
+
+class Autoencoder(nn.Module):
+    def __init__(self):
+        super(Autoencoder, self).__init__()
+        # Define the encoder
+        self.encoder = Encoder()
         # Define the decoder
         self.vit = ViT(
             image_size=256,  # 图像尺寸
@@ -31,16 +58,7 @@ class Autoencoder(nn.Module):
             pool='cls',
             emb_dropout=0.1
         )
-        self.decoder = nn.Sequential(
-            nn.ConvTranspose2d(512, 256, 4, stride=2, padding=1),
-            nn.ReLU(True),
-            nn.ConvTranspose2d(256, 128, 4, stride=2, padding=1),
-            nn.ReLU(True),
-            nn.ConvTranspose2d(128, 64, 4, stride=2, padding=1),
-            nn.ReLU(True),
-            nn.ConvTranspose2d(64, 1, 4, stride=2, padding=1),
-            nn.Tanh()
-        )
+        self.decoder = Decoder()
 
     def forward(self, vi, ir):
         # 将红外和可见光塞入vit

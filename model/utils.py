@@ -58,3 +58,21 @@ class Upsample(nn.Module):
         if is_drop:
             x = F.dropout2d(x)
         return x
+# 自定义神经网络层来提取图像的边缘细节并保持形状相同
+class EdgeDetectionLayer(nn.Module):
+    def __init__(self):
+        super(EdgeDetectionLayer, self).__init__()
+        self.conv1 = nn.Conv2d(3, 3, kernel_size=3, padding=1)
+    def forward(self, x):
+        edge_map = F.conv2d(x, weight=torch.Tensor([[[[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]]*3]).to(x.device), padding=1)
+        return x + edge_map
+
+
+# 自定义神经网络层来提取图像的频谱信息
+class FourierTransformLayer(nn.Module):
+    def __init__(self):
+        super(FourierTransformLayer, self).__init__()
+    def forward(self, x):
+        # 进行傅里叶变换
+        x_fft = torch.fft.fftn(x, dim=(-2, -1))
+        return x_fft.real
