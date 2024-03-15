@@ -136,7 +136,7 @@ for epoch in range(199 * 19):
             ir = ir.to(device)
             vi = vi.to(device)
             fusion_img = gen(vi, ir)  # 生成图片
-            torch.save(gen.state_dict(), 'Notrans_and_nearloss_model_checkpoint' + (str)(epoch) + '.pth')
+            torch.save(gen.state_dict(), 'Notrans_and_Sia_model_checkpoint' + (str)(epoch) + '.pth')
             # 得到每个batch的数据之后对每个batch进行计算指标
             # 这里我觉得应该输出每个轮次的平均值
             save_images_from_tensors(ir, vi, fusion_img, epoch)

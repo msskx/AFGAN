@@ -1,49 +1,22 @@
 import torch
 from torch import nn
+
+from model.S import Siamese
+from model.utils import Encoder, Decoder
 from model.vit import ViT
-
-
-class Encoder(nn.Module):
-    def __init__(self):
-        super(Encoder, self).__init__()
-        self.encoder = nn.Sequential(
-            nn.Conv2d(2, 64, 3, stride=2, padding=1),
-            nn.ReLU(True),
-            nn.Conv2d(64, 128, 3, stride=2, padding=1),
-            nn.ReLU(True),
-            nn.Conv2d(128, 256, 3, stride=2, padding=1),
-            nn.ReLU(True),
-            nn.Conv2d(256, 512, 3, stride=2, padding=1),
-            nn.ReLU(True)
-        )
-
-    def forward(self, x):
-        return self.encoder(x)
-
-
-class Decoder(nn.Module):
-    def __init__(self):
-        super(Decoder, self).__init__()
-        self.decoder = nn.Sequential(
-            nn.ConvTranspose2d(512, 256, 4, stride=2, padding=1),
-            nn.ReLU(True),
-            nn.ConvTranspose2d(256, 128, 4, stride=2, padding=1),
-            nn.ReLU(True),
-            nn.ConvTranspose2d(128, 64, 4, stride=2, padding=1),
-            nn.ReLU(True),
-            nn.ConvTranspose2d(64, 1, 4, stride=2, padding=1),
-            nn.Tanh()
-        )
-
-    def forward(self, x):
-        return self.decoder(x)
 
 
 class Autoencoder(nn.Module):
     def __init__(self):
         super(Autoencoder, self).__init__()
         # Define the encoder
-        self.encoder = Encoder()
+        self.encoder = Encoder()  # empty encoder
+        # model = Siamese()  # pre-train encoder
+        # model.load_state_dict(torch.load("/ML/Mashuai/GAN/AFGAN/Sia_model_checkpoint.pth"), strict=False)
+        # for param in model.parameters():  # freeze
+        #     param.requires_grad = False
+        # self.encoder = model.encoder
+
         # Define the decoder
         self.vit = ViT(
             image_size=256,  # 图像尺寸
@@ -62,12 +35,22 @@ class Autoencoder(nn.Module):
 
     def forward(self, vi, ir):
         # 将红外和可见光塞入vit
-        # vit_x = self.vit(torch.cat([vi, ir], axis=1))
+        vit_x = self.vit(torch.cat([vi, ir], axis=1))  # 过trans
         x = torch.cat([vi, ir], dim=1)
+        # fil = nn.Conv2d(in_channels=2, out_channels=1, kernel_size=1, stride=1)  # convert channel
+        # fil = fil.to('cuda')
         # print(f'初始图像：{x.shape}')
-        x = self.encoder(x)
+        x1 = self.encoder(vi)
+        x2 = self.encoder(ir)
         # print(f'编码器图像：{x.shape}')
         # x = x + vit_x.view(-1, 512, 16, 16)  # 将编码器和注意力机制的东西融合
-        x = self.decoder(x)
+        x = self.decoder(x1 + x2 + vit_x.view(-1, 512, 16, 16))
         # print(f'解码器图像：{x.shape}')
         return x
+
+# cc = Autoencoder()
+#
+# ins1 = torch.randn(32, 1, 256, 256)
+# ins2 = torch.randn(32, 1, 256, 256)
+# output = cc(ins1,ins2)
+# print(output.shape)

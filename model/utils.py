@@ -76,3 +76,39 @@ class FourierTransformLayer(nn.Module):
         # 进行傅里叶变换
         x_fft = torch.fft.fftn(x, dim=(-2, -1))
         return x_fft.real
+
+
+class Encoder(nn.Module):
+    def __init__(self):
+        super(Encoder, self).__init__()
+        self.encoder = nn.Sequential(
+            nn.Conv2d(1, 64, 3, stride=2, padding=1),
+            nn.ReLU(True),
+            nn.Conv2d(64, 128, 3, stride=2, padding=1),
+            nn.ReLU(True),
+            nn.Conv2d(128, 256, 3, stride=2, padding=1),
+            nn.ReLU(True),
+            nn.Conv2d(256, 512, 3, stride=2, padding=1),
+            nn.ReLU(True)
+        )
+
+    def forward(self, x):
+        return self.encoder(x)
+
+
+class Decoder(nn.Module):
+    def __init__(self):
+        super(Decoder, self).__init__()
+        self.decoder = nn.Sequential(
+            nn.ConvTranspose2d(512, 256, 4, stride=2, padding=1),
+            nn.ReLU(True),
+            nn.ConvTranspose2d(256, 128, 4, stride=2, padding=1),
+            nn.ReLU(True),
+            nn.ConvTranspose2d(128, 64, 4, stride=2, padding=1),
+            nn.ReLU(True),
+            nn.ConvTranspose2d(64, 1, 4, stride=2, padding=1),
+            nn.Tanh()
+        )
+
+    def forward(self, x):
+        return self.decoder(x)
